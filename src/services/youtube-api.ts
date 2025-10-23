@@ -1,9 +1,9 @@
 import {inject, injectable} from 'inversify';
-import {parse, toSeconds} from 'iso8601-duration';
+import {toSeconds, parse} from 'iso8601-duration';
 import got, {Got} from 'got';
 import ytsr, {Video} from '@distube/ytsr';
 import PQueue from 'p-queue';
-import {MediaSource, QueuedPlaylist, SongMetadata} from './player.js';
+import {SongMetadata, QueuedPlaylist, MediaSource} from './player.js';
 import {TYPES} from '../types.js';
 import Config from './config.js';
 import KeyValueCacheProvider from './key-value-cache.js';
@@ -74,7 +74,7 @@ export default class {
   }
 
   async search(query: string, shouldSplitChapters: boolean): Promise<SongMetadata[]> {
-    const result = await this.ytsrQueue.add(async () => this.cache.wrap(
+    const result = await this.ytsrQueue.add<ytsr.VideoResult>(async () => this.cache.wrap(
       ytsr,
       query,
       {
@@ -85,7 +85,7 @@ export default class {
       },
     ));
 
-    if (!result) {
+    if (result === undefined) {
       return [];
     }
 
